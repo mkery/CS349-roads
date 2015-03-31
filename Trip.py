@@ -54,7 +54,13 @@ class Trip(object):
 	 	self.advSpeed = self.tripDist/self.tripTime #meters per second
 	 	self.maxSpeed = max(self.v)
 
-	 	self.stops = findStops(self.v)
+	 	self.stops = len(findStops(self.v))
+
+	def printFeatures(self):
+		features = ""
+		features += str(self.advSpeed)+","
+		features += str(self.tripDist)+"\n"
+		return features
 
 	def plotTrip(self):
 		#first figure is the xy path
@@ -73,9 +79,9 @@ class Trip(object):
 		pyplot.show()
 
 
-doc = sys.argv[1]
+"""doc = sys.argv[1]
 trip_test = Trip(doc)
-trip_test.plotTrip()
+trip_test.plotTrip()"""
 
 #print trip_test.advSpeed
 
