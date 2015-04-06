@@ -16,9 +16,7 @@ class Driver(object):
 
 	def __init__(self, driverName):
 		self.name = driverName
-	
-	def testCLF():
-		
+
 
 	def classify(self):
 		#get training trips for this driver
@@ -37,14 +35,14 @@ class Driver(object):
 		print clf.fit(traintrips, target)
 		print clf.predict(traintrips[0])
 		print clf.score(traintrips, target)
-		joblib.dump(clf, "driver_stats/"+str(self.name)+"_clf.pkl")
+		#joblib.dump(clf, "driver_stats/"+str(self.name)+"_clf.pkl")
 
 
 	def writeCSV(self):
 		g = open ("driver_stats/"+str(self.name)+"_trips.csv", "w")
 		#a header and then the features for each trip
 		g.write("advSpeed,tripDist\n")
-		for i in range (1, num_selfTrips):
+		for i in range (1,num_selfTrips+1):
 			t = Trip("../drivers/"+str(self.name)+"/"+str(i)+".csv")
 			g.write(t.printFeatures())
 		g.close()
@@ -76,7 +74,7 @@ class Driver(object):
 		#a header and then the features for each trip
 		g.write("advSpeed,tripDist\n")
 		#first trips from this driver
-		for i in range (1, num_selfTrips):
+		for i in range (1,num_selfTrips+1):
 			t = Trip("../drivers/"+str(self.name)+"/"+str(i)+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
@@ -113,6 +111,7 @@ class Driver(object):
 
 
 d1 = Driver(sys.argv[1])
+#d1.writeCSV_training()
 d1.classify()
 
 
