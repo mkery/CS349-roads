@@ -5,7 +5,9 @@ import math
 from Trip import Trip
 import os
 import random
-from sklearn.linear_model import LogisticRegression
+#from sklearn.linear_model import LogisticRegression
+#from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVC
 from sklearn.externals import joblib
 
 num_selfTrips = 120
@@ -30,11 +32,24 @@ class Driver(object):
 		target = np.genfromtxt(g, delimiter=',')
 		g.close()
 
-		print traintrips.shape, target.shape
-		clf = LogisticRegression()
+		#get testing trips for this driver
+		f = open("driver_stats/"+str(self.name)+"_test.csv")
+		f.readline() #skip header labels
+		testtrips = np.genfromtxt(f, delimiter=',')
+		f.close()
+
+		#get list of labels for the trips in traintrips
+		g = open("driver_stats/testingLabels.csv")
+		testtarget = np.genfromtxt(g, delimiter=',')
+		g.close()
+
+
+		#print traintrips.shape, target.shape
+		clf = SVC()#RandomForestRegressor() #LogisticRegression()
 		print clf.fit(traintrips, target)
 		print clf.predict(traintrips[0])
 		print clf.score(traintrips, target)
+		print clf.score(testtrips, testtarget)
 		#joblib.dump(clf, "driver_stats/"+str(self.name)+"_clf.pkl")
 
 
@@ -83,7 +98,8 @@ class Driver(object):
 			g.write(other)
 		g.close()
 
-	def writeCSV_labels():
+	#TODO: extend to both training and testing labels 
+	def writeCSV_labels(self):
 		#file containing training labels, same for any driver
 		h = open ("driver_stats/"+"trainingLabels.csv", "w")
 		for i in range(num_selfTrips):
@@ -109,9 +125,10 @@ class Driver(object):
 
 
 
-
 d1 = Driver(sys.argv[1])
 #d1.writeCSV_training()
+#d1.writeCSV_labels()
+d1.writeCSV_test()
 d1.classify()
 
 
