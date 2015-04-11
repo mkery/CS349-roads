@@ -7,6 +7,7 @@ import os
 import random
 from sklearn.linear_model import LogisticRegression
 from sklearn.externals import joblib
+from sklearn.svm import SVC
 
 num_selfTrips = 120
 num_testTrips = 40
@@ -21,7 +22,7 @@ class Driver(object):
 	def classify(self):
 		#get training trips for this driver
 		f = open("driver_stats/"+str(self.name)+"_training.csv")
-		f.readline() #skip header labels
+		#f.readline() #skip header labels
 		traintrips = np.genfromtxt(f, delimiter=',')
 		f.close()
 
@@ -30,11 +31,20 @@ class Driver(object):
 		target = np.genfromtxt(g, delimiter=',')
 		g.close()
 
+		#get test trips for this driver
+		h = open("driver_stats/"+str(self.name)+"_test.csv")
+		testtrips = np.genfromtxt(h, delimiter=',')
+		h.close()
+		k = open("driver_stats/testLabels.csv")
+		test_target = np.genfromtxt(k, delimiter=',')
+		k.close() 
+
+
 		print traintrips.shape, target.shape
-		clf = LogisticRegression()
+		print traintrips[1]
+		clf = SVC()
 		print clf.fit(traintrips, target)
-		print clf.predict(traintrips[0])
-		print clf.score(traintrips, target)
+		print clf.score(testtrips, test_target)
 		#joblib.dump(clf, "driver_stats/"+str(self.name)+"_clf.pkl")
 
 
@@ -51,9 +61,9 @@ class Driver(object):
 		notDrivers = os.listdir("../drivers/")
 		tripList = []
 		for i in range(numtrips):
-			dnum = notDrivers[random.randint(1, len(notDrivers))] #sample a random driver
+			dnum = notDrivers[random.randint(1, len(notDrivers) - 1)] #sample a random driver
 			while dnum == self.name: #don't sample from self
-				dnum = notDrivers[random.randint(1, len(notDrivers))]
+				dnum = notDrivers[random.randint(1, len(notDrivers) - 1)]
 			tnum = random.randint(1,200)#sample a random trip
 			t = Trip("../drivers/"+str(dnum)+"/"+str(tnum)+".csv")
 			tripList.append(t.printFeatures())
@@ -72,7 +82,7 @@ class Driver(object):
 	def writeCSV_training(self):
 		g = open ("driver_stats/"+str(self.name)+"_training.csv", "w")
 		#a header and then the features for each trip
-		g.write("advSpeed,tripDist\n")
+			#g.write("advSpeed,tripDist\n")
 		#first trips from this driver
 		for i in range (1,num_selfTrips+1):
 			t = Trip("../drivers/"+str(self.name)+"/"+str(i)+".csv")
@@ -83,7 +93,7 @@ class Driver(object):
 			g.write(other)
 		g.close()
 
-	def writeCSV_labels():
+	def writeCSV_labels(self):
 		#file containing training labels, same for any driver
 		h = open ("driver_stats/"+"trainingLabels.csv", "w")
 		for i in range(num_selfTrips):
@@ -92,12 +102,19 @@ class Driver(object):
 			h.write(str(0)+"\n")
 		h.close()
 
+	def writeCSV_testlabels(self):
+		#file containing test labels, same for any driver
+		h = open ("driver_stats/"+"testLabels.csv", "w")
+		for i in range(num_testTrips):
+			h.write(str(1)+"\n")
+		for i in range(num_NOTselfTrips):
+			h.write(str(0)+"\n")
+		h.close()
+
 	def writeCSV_test(self):
 		g = open ("driver_stats/"+str(self.name)+"_test.csv", "w")
-		#a header and then the features for each trip
-		g.write("advSpeed,tripDist\n")
 		#first trips from this driver
-		for i in range (num_selfTrips+1, num_selfTrips+num_testTrips):
+		for i in range (num_selfTrips+1, num_selfTrips+num_testTrips+1):
 			t = Trip("../drivers/"+str(self.name)+"/"+str(i)+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
@@ -108,10 +125,9 @@ class Driver(object):
 
 
 
-
-
 d1 = Driver(sys.argv[1])
-#d1.writeCSV_training()
+d1.writeCSV_test()
+d1.writeCSV_training()
 d1.classify()
 
 

@@ -20,6 +20,13 @@ def findSpeed_Dist(trip):
 
 	return v,dist
 
+def findSpeed_Hist(trip):
+	vel =  np.diff(trip, axis = 0) #x1-x0 and y1-y0
+	vel = (vel[:,0]**2 + vel[:,1]**2)**0.5 #take distance
+	vel_hist = [np.percentile(vel, i*10) for i in range(1,10)]
+	return vel_hist
+
+
 def findStops(speeds):
 	stops = [] #stops are a start and end time pair
 	start = -1
@@ -44,23 +51,30 @@ class Trip(object):
 	def __init__(self, filename):
 
 		#read in trip from file
-	 	tripPath = np.genfromtxt(filename, delimiter=',', skip_header=1)
+	 	self.tripPath = np.genfromtxt(filename, delimiter=',', skip_header=1)
 	 	#add a column for time in seconds (so if we chop data, still have timepoints)
-	 	self.tripPath = np.append(tripPath, np.arange(tripPath.shape[0]).reshape(tripPath.shape[0],1),1)
+	 	#self.tripPath = np.append(tripPath, np.arange(tripPath.shape[0]).reshape(tripPath.shape[0],1),1)
 	 	
-	 	self.v, self.tripDist = findSpeed_Dist(tripPath)
+	 	self.v, self.tripDist = findSpeed_Dist(self.tripPath)
 
-	 	self.tripTime = tripPath.shape[0] #length of trip in seconds
+	 	self.tripTime = self.tripPath.shape[0] #length of trip in seconds
 	 	self.advSpeed = self.tripDist/self.tripTime #meters per second
 	 	self.maxSpeed = max(self.v)
 
 	 	self.stops = len(findStops(self.v))
 
+	 	self.speed_hist = findSpeed_Hist(self.tripPath)
+
 	def printFeatures(self):
 		features = ""
 		features += str(self.advSpeed)+","
-		features += str(self.tripDist)+"\n"
-		return features
+		features += str(self.tripDist)
+		"""for i in range(len(self.speed_hist)-1):
+			features += str(self.speed_hist[i])+","
+		#to avoid final comma (will mess up input)
+		features += str(self.speed_hist[len(self.speed_hist)-1])"""
+
+		return features + "\n"
 
 	def plotTrip(self):
 		#first figure is the xy path
@@ -79,9 +93,8 @@ class Trip(object):
 		pyplot.show()
 
 
-"""doc = sys.argv[1]
-trip_test = Trip(doc)
-trip_test.plotTrip()"""
+#trip_test = Trip(sys.argv[1])
+#trip_test.plotTrip()
 
 #print trip_test.advSpeed
 

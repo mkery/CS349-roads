@@ -33,16 +33,18 @@ def plotTrip(filename):
 	v, distancesum = velocities_and_distance_covered(tripPath)
 
 
-	pyplot.figure(1)
-	pyplot.subplot(211)
+	"""pyplot.figure(1)
+	pyplot.subplot(211)"""
 	startPoint = (tripPath[0][0], tripPath[1][1]) 
-	pyplot.plot(tripPath[:,0], tripPath[:,1], 'r-', startPoint[0], startPoint[1], 'bs')
-	for (x, y) in reducedTrip:
-   		 pyplot.plot(x, y, 'b+')
-
-	pyplot.subplot(212)
-	pyplot.plot(v, label='velocity')
+	pyplot.plot(tripPath[:,0], tripPath[:,1], 'bx', startPoint[0], startPoint[1], 'bs')
+	#for (x, y) in reducedTrip:
+   	#	 pyplot.plot(x, y, 'r+')
+	pyplot.ylabel('y')
+	pyplot.xlabel('x')
 	pyplot.show()
+	"""pyplot.subplot(212)
+	pyplot.plot(v, label='velocity')
+	pyplot.show()"""
 
 
 doc = sys.argv[1]
