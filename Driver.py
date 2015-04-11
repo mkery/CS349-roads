@@ -5,7 +5,9 @@ import math
 from Trip import Trip
 import os
 import random
-from sklearn.linear_model import LogisticRegression
+#from sklearn.linear_model import LogisticRegression
+#from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVC
 from sklearn.externals import joblib
 from sklearn.svm import SVC
 
@@ -42,9 +44,11 @@ class Driver(object):
 
 		print traintrips.shape, target.shape
 		print traintrips[1]
-		clf = SVC()
+		clf = SVC()#RandomForestRegressor() #LogisticRegression()
 		print clf.fit(traintrips, target)
+		print clf.score(traintrips, target)
 		print clf.score(testtrips, test_target)
+
 		#joblib.dump(clf, "driver_stats/"+str(self.name)+"_clf.pkl")
 
 
@@ -93,6 +97,7 @@ class Driver(object):
 			g.write(other)
 		g.close()
 
+	#TODO: extend to both training and testing labels 
 	def writeCSV_labels(self):
 		#file containing training labels, same for any driver
 		h = open ("driver_stats/"+"trainingLabels.csv", "w")
@@ -124,10 +129,10 @@ class Driver(object):
 		g.close()
 
 
-
 d1 = Driver(sys.argv[1])
-d1.writeCSV_test()
-d1.writeCSV_training()
+#d1.writeCSV_training()
+#d1.writeCSV_labels()
+#d1.writeCSV_test()
 d1.classify()
 
 
