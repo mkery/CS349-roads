@@ -20,11 +20,6 @@ def findSpeed_Dist(trip):
 
 	return v,dist
 
-def findSpeed_Hist(trip):
-	vel =  np.diff(trip, axis = 0) #x1-x0 and y1-y0
-	vel = (vel[:,0]**2 + vel[:,1]**2)**0.5 #take distance
-	vel_hist = [np.percentile(vel, i*10) for i in range(1,10)]
-	return vel_hist
 
 
 def findStops(speeds):
@@ -45,6 +40,13 @@ def findStops(speeds):
 		stops.append([start, len(speeds)])
 	return stops
 
+def printHist_Feature(hist):
+	h = ""
+	for i in range(len(hist)-1):
+		h += str(hist[i])+","
+	#to avoid final comma (will mess up input)
+	h += str(hist[len(hist)-1])	
+	return h
 
 class Trip(object):
 
@@ -55,24 +57,30 @@ class Trip(object):
 	 	#add a column for time in seconds (so if we chop data, still have timepoints)
 	 	#self.tripPath = np.append(tripPath, np.arange(tripPath.shape[0]).reshape(tripPath.shape[0],1),1)
 	 	
-	 	self.v, self.tripDist = findSpeed_Dist(self.tripPath)
+	 	#self.v, self.tripDist = findSpeed_Dist(self.tripPath)
+	 	self.findSpeed_Hist(self.tripPath)
 
-	 	self.tripTime = self.tripPath.shape[0] #length of trip in seconds
+		self.tripTime = self.tripPath.shape[0] #length of trip in seconds
 	 	self.advSpeed = self.tripDist/self.tripTime #meters per second
 	 	self.maxSpeed = max(self.v)
 
-	 	self.stops = len(findStops(self.v))
+	 	self.stops = findStops(self.v)#len(findStops(self.v))
 
-	 	self.speed_hist = findSpeed_Hist(self.tripPath)
+	 	#self.speed_hist, self.acc = findSpeed_Hist(self.tripPath)
+
+	def findSpeed_Hist(self, trip):
+		vel =  np.diff(trip, axis = 0) #x1-x0 and y1-y0
+		self.v = (vel[:,0]**2 + vel[:,1]**2)**0.5 #take distance
+		self.tripDist = np.sum(self.v)
+		self.acc = np.diff(self.v, axis = 0)
+		self.speed_hist = [np.percentile(self.v, i*5) for i in range(1,20)]
+		self.acc_hist = [np.percentile(self.acc, i*10) for i in range(1,10)]
 
 	def printFeatures(self):
 		features = ""
-		features += str(self.advSpeed)+","
-		features += str(self.tripDist)
-		"""for i in range(len(self.speed_hist)-1):
-			features += str(self.speed_hist[i])+","
-		#to avoid final comma (will mess up input)
-		features += str(self.speed_hist[len(self.speed_hist)-1])"""
+		features += printHist_Feature(self.acc_hist)+","
+		features += str(self.tripDist)+","
+		features += printHist_Feature(self.acc_hist)
 
 		return features + "\n"
 
@@ -81,7 +89,8 @@ class Trip(object):
 	 	pyplot.figure(1)
 		pyplot.subplot(211)
 		startPoint = (self.tripPath[0]) 
-		pyplot.plot(self.tripPath[:,0], self.tripPath[:,1], 'r-', startPoint[0], startPoint[1], 'bs')
+		endPoint = (self.tripPath[self.tripPath.shape[0]-1])
+		pyplot.plot(self.tripPath[:,0], self.tripPath[:,1], 'r-', startPoint[0], startPoint[1], 'gD', endPoint[0], endPoint[1], 'bD')
 		for st,end in self.stops:
 			pyplot.plot(self.tripPath[st][0], self.tripPath[st][1], 'rs')
 		#second figure is velocity over time
@@ -89,13 +98,14 @@ class Trip(object):
 		pyplot.plot(self.v, 'g-')
 		for st,end in self.stops:
 			pyplot.plot(st,self.v[st], 'bs', end, self.v[st], 'rs')
-			print end - st
+			#print end - st
+		pyplot.plot(self.acc, 'b-')
 		pyplot.show()
 
 
-#trip_test = Trip(sys.argv[1])
-#trip_test.plotTrip()
+"""trip_test = Trip(sys.argv[1])
+trip_test.plotTrip()
 
-#print trip_test.advSpeed
+print trip_test.advSpeed"""
 
 
