@@ -15,9 +15,15 @@ num_selfTrips = 120
 num_testTrips = 40
 num_NOTselfTrips = 200
 
-#it was giving me an error when I made this method part of the class; feel free to move it from here...
-#we might have to change the rounding at some point, but it's a good way to start
-def calculateResults(predicted, true):
+
+class Driver(object):
+
+	def __init__(self, driverName):
+		self.name = driverName
+
+
+	#we might have to change the rounding at some point, but it's a good way to start
+	def calculateResults(self,predicted, true):
 		tp = 0
 		tn = 0
 		fp = 0
@@ -38,12 +44,6 @@ def calculateResults(predicted, true):
 		recall = float(tp)/(tp+fn)
 		print 'Precision: ', prec
 		print 'Recall: ', recall
-
-class Driver(object):
-
-	def __init__(self, driverName):
-		self.name = driverName
-
 
 	def classify(self):
 
@@ -75,10 +75,10 @@ class Driver(object):
 
 		predLabels = clf.predict (testtrips)
 
-		print predLabels
-		print test_target
+		#print predLabels
+		#print test_target
 
-		calculateResults(predLabels, test_target)
+		self.calculateResults(predLabels, test_target)
 		
 		#print clf.score(testtrips, test_target)
 
