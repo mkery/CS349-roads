@@ -15,6 +15,29 @@ num_selfTrips = 120
 num_testTrips = 40
 num_NOTselfTrips = 200
 
+#it was giving me an error when I made this method part of the class; feel free to move it from here...
+def calculateResults(predicted, true):
+		tp = 0
+		tn = 0
+		fp = 0
+		fn = 0
+
+		for i in range (len(true)):
+			if (true[i] == 1 and predicted[i] == 1):
+				tp+=1
+			if (true[i] == 1 and predicted[i] == 0):
+				fn+=1
+			if (true[i] == 0 and predicted[i] == 1):
+				fp+=1
+			if (true[i] == 0 and predicted[i] == 0):
+				tn+=1
+
+		#print tp, tn, fp, fn
+		prec = float(tp)/(tp+fp)
+		recall = float(tp)/(tp+fn)
+		print 'Precision: ', prec
+		print 'Recall: ', recall
+
 class Driver(object):
 
 	def __init__(self, driverName):
@@ -22,6 +45,7 @@ class Driver(object):
 
 
 	def classify(self):
+
 		#get training trips for this driver
 		f = open("driver_stats/"+str(self.name)+"_training.csv")
 		#f.readline() #skip header labels
@@ -46,11 +70,18 @@ class Driver(object):
 		print traintrips[1]
 		clf = SVC()#RandomForestRegressor() #LogisticRegression()
 		print clf.fit(traintrips, target)
-		print clf.score(traintrips, target)
-		print clf.score(testtrips, test_target)
+		#print clf.score(traintrips, target)
+
+		predLabels = clf.predict (testtrips)
+
+		#print predLabels
+		#print test_target
+
+		calculateResults(predLabels, test_target)
+		
+		#print clf.score(testtrips, test_target)
 
 		#joblib.dump(clf, "driver_stats/"+str(self.name)+"_clf.pkl")
-
 
 	def writeCSV(self):
 		g = open ("driver_stats/"+str(self.name)+"_trips.csv", "w")
@@ -133,6 +164,7 @@ d1 = Driver(sys.argv[1])
 #d1.writeCSV_training()
 #d1.writeCSV_labels()
 #d1.writeCSV_test()
+#d1.writeCSV_testlabels()
 d1.classify()
 
 
