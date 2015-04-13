@@ -6,7 +6,7 @@ from Trip import Trip
 import os
 import random
 #from sklearn.linear_model import LogisticRegression
-#from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVC
 from sklearn.externals import joblib
 from sklearn.svm import SVC
@@ -16,6 +16,7 @@ num_testTrips = 40
 num_NOTselfTrips = 200
 
 #it was giving me an error when I made this method part of the class; feel free to move it from here...
+#we might have to change the rounding at some point, but it's a good way to start
 def calculateResults(predicted, true):
 		tp = 0
 		tn = 0
@@ -23,13 +24,13 @@ def calculateResults(predicted, true):
 		fn = 0
 
 		for i in range (len(true)):
-			if (true[i] == 1 and predicted[i] == 1):
+			if (true[i] == 1 and round(predicted[i]) == 1):
 				tp+=1
-			if (true[i] == 1 and predicted[i] == 0):
+			if (true[i] == 1 and round(predicted[i]) == 0):
 				fn+=1
-			if (true[i] == 0 and predicted[i] == 1):
+			if (true[i] == 0 and round(predicted[i]) == 1):
 				fp+=1
-			if (true[i] == 0 and predicted[i] == 0):
+			if (true[i] == 0 and round(predicted[i]) == 0):
 				tn+=1
 
 		#print tp, tn, fp, fn
@@ -68,14 +69,14 @@ class Driver(object):
 
 		print traintrips.shape, target.shape
 		print traintrips[1]
-		clf = SVC()#RandomForestRegressor() #LogisticRegression()
+		clf = RandomForestRegressor() #LogisticRegression()
 		print clf.fit(traintrips, target)
 		#print clf.score(traintrips, target)
 
 		predLabels = clf.predict (testtrips)
 
-		#print predLabels
-		#print test_target
+		print predLabels
+		print test_target
 
 		calculateResults(predLabels, test_target)
 		
