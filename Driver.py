@@ -67,8 +67,8 @@ class Driver(object):
 		k.close() 
 
 
-		print traintrips.shape, target.shape
-		print traintrips[1]
+		#print traintrips.shape, target.shape
+		#print traintrips[1]
 		clf = RandomForestRegressor() #LogisticRegression()
 		print clf.fit(traintrips, target)
 		#print clf.score(traintrips, target)
@@ -162,10 +162,10 @@ class Driver(object):
 
 
 d1 = Driver(sys.argv[1])
-#d1.writeCSV_training()
-#d1.writeCSV_labels()
-#d1.writeCSV_test()
-#d1.writeCSV_testlabels()
+d1.writeCSV_training()
+d1.writeCSV_labels()
+d1.writeCSV_test()
+d1.writeCSV_testlabels()
 d1.classify()
 
 
