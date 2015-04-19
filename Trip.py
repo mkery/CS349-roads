@@ -69,6 +69,8 @@ class Trip(object):
 
 	 	#self.speed_hist, self.acc = findSpeed_Hist(self.tripPath)
 
+
+
 	#changed the implementation of this method, which brought the metrics up a bit
 	#I used km/h, but we can easily change that
 	def findSpeed_Hist(self, trip):

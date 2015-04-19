@@ -10,6 +10,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVC
 from sklearn.externals import joblib
 from sklearn.svm import SVC
+import random
 
 num_selfTrips = 120
 num_testTrips = 40
@@ -42,8 +43,10 @@ class Driver(object):
 		#print tp, tn, fp, fn
 		prec = float(tp)/(tp+fp)
 		recall = float(tp)/(tp+fn)
-		print 'Precision: ', prec
-		print 'Recall: ', recall
+		#print 'Precision: ', prec
+		#print 'Recall: ', recall
+
+		return (prec, recall)
 
 	def classify(self):
 
@@ -70,7 +73,7 @@ class Driver(object):
 		#print traintrips.shape, target.shape
 		#print traintrips[1]
 		clf = RandomForestRegressor() #LogisticRegression()
-		print clf.fit(traintrips, target)
+		clf.fit(traintrips, target)
 		#print clf.score(traintrips, target)
 
 		predLabels = clf.predict (testtrips)
@@ -78,7 +81,7 @@ class Driver(object):
 		#print predLabels
 		#print test_target
 
-		self.calculateResults(predLabels, test_target)
+		return self.calculateResults(predLabels, test_target)
 		
 		#print clf.score(testtrips, test_target)
 
@@ -115,13 +118,13 @@ class Driver(object):
 			g.write(other)
 		g.close()
 
-	def writeCSV_training(self):
+	def writeCSV_training(self, order):
 		g = open ("driver_stats/"+str(self.name)+"_training.csv", "w")
 		#a header and then the features for each trip
 			#g.write("advSpeed,tripDist\n")
 		#first trips from this driver
 		for i in range (1,num_selfTrips+1):
-			t = Trip("../drivers/"+str(self.name)+"/"+str(i)+".csv")
+			t = Trip("../drivers/"+str(self.name)+"/"+str(order[i])+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
 		tripList = self.getRandomDriverTrips()
@@ -148,11 +151,11 @@ class Driver(object):
 			h.write(str(0)+"\n")
 		h.close()
 
-	def writeCSV_test(self):
+	def writeCSV_test(self, order):
 		g = open ("driver_stats/"+str(self.name)+"_test.csv", "w")
 		#first trips from this driver
 		for i in range (num_selfTrips+1, num_selfTrips+num_testTrips+1):
-			t = Trip("../drivers/"+str(self.name)+"/"+str(i)+".csv")
+			t = Trip("../drivers/"+str(self.name)+"/"+str(order[i])+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
 		tripList = self.getRandomDriverTrips()
@@ -160,12 +163,18 @@ class Driver(object):
 			g.write(other)
 		g.close()
 
+	def createDataSets(self):
+		order = [i for i in range(1, 201)]
+		random.shuffle(order)
+		self.writeCSV_training(order)
+		self.writeCSV_labels()
+		self.writeCSV_test(order)
+		self.writeCSV_testlabels()
+
+
 
 d1 = Driver(sys.argv[1])
-d1.writeCSV_training()
-d1.writeCSV_labels()
-d1.writeCSV_test()
-d1.writeCSV_testlabels()
+d1.createDataSets()
 d1.classify()
 
 
