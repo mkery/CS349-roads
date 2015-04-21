@@ -6,7 +6,7 @@ from Trip import Trip
 import os
 import random
 #from sklearn.linear_model import LogisticRegression
-#from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.externals import joblib
 from sklearn.svm import SVC
@@ -42,12 +42,11 @@ class Driver(object):
 		k.close() 
 
 
-		print traintrips.shape, target.shape
-		print traintrips[1]
-		clf = SVC()#RandomForestRegressor() #LogisticRegression()
+		print "driver ", self.name
+		clf = RandomForestClassifier(n_estimators=30, criterion='entropy', max_depth=15,  n_jobs=1, min_samples_leaf=5,verbose=1)
 		print clf.fit(traintrips, target)
-		print clf.score(traintrips, target)
-		print clf.score(testtrips, test_target)
+		print clf.score(traintrips, target), "train"
+		print clf.score(testtrips, test_target), "test"
 
 		#joblib.dump(clf, "driver_stats/"+str(self.name)+"_clf.pkl")
 
