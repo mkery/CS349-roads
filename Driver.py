@@ -6,14 +6,17 @@ from Trip import Trip
 import os
 import random
 #from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
+#from sklearn.ensemble import RandomForestClassifier
+#from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVC
 from sklearn.externals import joblib
 from sklearn.svm import SVC
+import random
 
 num_selfTrips = 120
 num_testTrips = 40
 num_NOTselfTrips = 200
+
 
 class Driver(object):
 
@@ -21,7 +24,33 @@ class Driver(object):
 		self.name = driverName
 
 
+	#we might have to change the rounding at some point, but it's a good way to start
+	def calculateResults(self,predicted, true):
+		tp = 0
+		tn = 0
+		fp = 0
+		fn = 0
+
+		for i in range (len(true)):
+			if (true[i] == 1 and round(predicted[i]) == 1):
+				tp+=1
+			if (true[i] == 1 and round(predicted[i]) == 0):
+				fn+=1
+			if (true[i] == 0 and round(predicted[i]) == 1):
+				fp+=1
+			if (true[i] == 0 and round(predicted[i]) == 0):
+				tn+=1
+
+		#print tp, tn, fp, fn
+		prec = float(tp)/(tp+fp)
+		recall = float(tp)/(tp+fn)
+		#print 'Precision: ', prec
+		#print 'Recall: ', recall
+
+		return (prec, recall)
+
 	def classify(self):
+
 		#get training trips for this driver
 		f = open("driver_stats/"+str(self.name)+"_training.csv")
 		#f.readline() #skip header labels
@@ -42,14 +71,30 @@ class Driver(object):
 		k.close() 
 
 
+
 		print "driver ", self.name
 		clf = RandomForestClassifier(n_estimators=30, criterion='entropy', max_depth=15,  n_jobs=1, min_samples_leaf=5,verbose=1)
 		print clf.fit(traintrips, target)
 		print clf.score(traintrips, target), "train"
 		print clf.score(testtrips, test_target), "test"
 
-		#joblib.dump(clf, "driver_stats/"+str(self.name)+"_clf.pkl")
+		#print traintrips.shape, target.shape
+		#print traintrips[1]
+		#clf = RandomForestRegressor() #LogisticRegression()
+		#clf.fit(traintrips, target)
+		#print clf.score(traintrips, target)
 
+
+		predLabels = clf.predict (testtrips)
+
+		#print predLabels
+		#print test_target
+
+		return self.calculateResults(predLabels, test_target)
+		
+		#print clf.score(testtrips, test_target)
+
+		#joblib.dump(clf, "driver_stats/"+str(self.name)+"_clf.pkl")
 
 	def writeCSV(self):
 		g = open ("driver_stats/"+str(self.name)+"_trips.csv", "w")
@@ -82,13 +127,13 @@ class Driver(object):
 			g.write(other)
 		g.close()
 
-	def writeCSV_training(self):
+	def writeCSV_training(self, order):
 		g = open ("driver_stats/"+str(self.name)+"_training.csv", "w")
 		#a header and then the features for each trip
 			#g.write("advSpeed,tripDist\n")
 		#first trips from this driver
 		for i in range (1,num_selfTrips+1):
-			t = Trip("../drivers/"+str(self.name)+"/"+str(i)+".csv")
+			t = Trip("../drivers/"+str(self.name)+"/"+str(order[i])+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
 		tripList = self.getRandomDriverTrips()
@@ -115,11 +160,11 @@ class Driver(object):
 			h.write(str(0)+"\n")
 		h.close()
 
-	def writeCSV_test(self):
+	def writeCSV_test(self, order):
 		g = open ("driver_stats/"+str(self.name)+"_test.csv", "w")
 		#first trips from this driver
 		for i in range (num_selfTrips+1, num_selfTrips+num_testTrips+1):
-			t = Trip("../drivers/"+str(self.name)+"/"+str(i)+".csv")
+			t = Trip("../drivers/"+str(self.name)+"/"+str(order[i])+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
 		tripList = self.getRandomDriverTrips()
@@ -127,11 +172,18 @@ class Driver(object):
 			g.write(other)
 		g.close()
 
+	def createDataSets(self):
+		order = [i for i in range(1, 201)]
+		random.shuffle(order)
+		self.writeCSV_training(order)
+		self.writeCSV_labels()
+		self.writeCSV_test(order)
+		self.writeCSV_testlabels()
+
+
 
 d1 = Driver(sys.argv[1])
-#d1.writeCSV_training()
-#d1.writeCSV_labels()
-#d1.writeCSV_test()
+d1.createDataSets()
 d1.classify()
 
 

@@ -4,6 +4,7 @@ import os
 import sys
 import rdp_trip
 import math
+import Pmf
 
 
 def distance(x0, y0, x1, y1):
@@ -68,17 +69,68 @@ class Trip(object):
 
 	 	#self.speed_hist, self.acc = findSpeed_Hist(self.tripPath)
 
+
+
+	#changed the implementation of this method, which brought the metrics up a bit
+	#I used km/h, but we can easily change that
 	def findSpeed_Hist(self, trip):
+		
+		speedList = []
+		speedList.append(0)
+		accList = []
+		accList.append(0)
+
+		for i in range (1,len(self.tripPath)):
+
+			speedList.append (round(3.6*distance(self.tripPath[i-1][0], self.tripPath[i-1][1], self.tripPath[i][0], self.tripPath[i][1])))
+			accList.append(speedList[i]-speedList[i-1])
+
+		mypmf = Pmf.MakePmfFromList(speedList)
+		self.speed_hist = []
+		MAX = 220
+		vals, freqs = mypmf.Render()
+		val = 0
+		for i in range(MAX):
+
+			try:
+				val = freqs[vals.index(i)]
+			except ValueError:
+				val = 0
+
+			self.speed_hist.append (val)
+
+		mypmf = Pmf.MakePmfFromList(accList)
+		self.acc_hist = []
+		MAX = 50
+		vals, freqs = mypmf.Render()
+		val = 0
+		for i in range(MAX):
+
+			try:
+				val = freqs[vals.index(i)]
+			except ValueError:
+				val = 0
+
+			self.acc_hist.append (val)
+		#print self.speed_hist
+
+		#mypmf.Items()
+		#sys.exit()
+		
+		
 		vel =  np.diff(trip, axis = 0) #x1-x0 and y1-y0
 		self.v = (vel[:,0]**2 + vel[:,1]**2)**0.5 #take distance
 		self.tripDist = np.sum(self.v)
+		"""
 		self.acc = np.diff(self.v, axis = 0)
 		self.speed_hist = [np.percentile(self.v, i*5) for i in range(1,20)]
 		self.acc_hist = [np.percentile(self.acc, i*10) for i in range(1,10)]
+		"""
+		
 
 	def printFeatures(self):
 		features = ""
-		features += printHist_Feature(self.acc_hist)+","
+		features += printHist_Feature(self.speed_hist)+","
 		features += str(self.tripDist)+","
 		features += printHist_Feature(self.acc_hist)
 
