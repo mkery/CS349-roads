@@ -7,6 +7,7 @@ import os
 import random
 #from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.externals import joblib
 from sklearn.svm import SVC
@@ -72,13 +73,13 @@ class Driver(object):
 
 		#print traintrips.shape, target.shape
 		#print traintrips[1]
-		clf = RandomForestRegressor() #LogisticRegression()
+		clf = RandomForestClassifier() #LogisticRegression()
 		clf.fit(traintrips, target)
 		#print clf.score(traintrips, target)
 
 		predLabels = clf.predict (testtrips)
 
-		#print predLabels
+		print predLabels
 		#print test_target
 
 		return self.calculateResults(predLabels, test_target)
@@ -174,8 +175,8 @@ class Driver(object):
 
 
 d1 = Driver(sys.argv[1])
-d1.createDataSets()
-d1.classify()
+#d1.createDataSets()
+print d1.classify()
 
 
 """d2 = Driver(sys.argv[2])

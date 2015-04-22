@@ -130,8 +130,10 @@ class Trip(object):
 
 	def printFeatures(self):
 		features = ""
-		features += printHist_Feature(self.speed_hist)+","
 		features += str(self.tripDist)+","
+		features += str (self.advSpeed) + ","
+		#features += str(self.maxSpeed) + ","
+		features += printHist_Feature(self.speed_hist)+","
 		features += printHist_Feature(self.acc_hist)
 
 		return features + "\n"

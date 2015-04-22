@@ -12,11 +12,13 @@ for i in range(1, len(drivers)):
 	g = open (sys.argv[2], "a")
 	#print drivers[i]
 	d = Driver(drivers[i])
-	g.write(drivers[i] + ":")
+	g.write(drivers[i] + ",")
 	for j in range(n):
 		d.createDataSets()
 		res = d.classify()
-		g.write (str(res[0]) + " " + str(res[1]) + " ")
+		g.write (str(res[0]) + "," + str(res[1]))
+		if j < (n-1):
+			g.write(",")
 
 	g.write("\n")
 	#sys.exit()
