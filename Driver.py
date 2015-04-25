@@ -14,7 +14,7 @@ from sklearn.svm import SVC
 import random
 
 num_selfTrips = 120
-num_testTrips = 40
+num_testTrips = 80
 num_NOTselfTrips = 200
 
 
@@ -44,10 +44,11 @@ class Driver(object):
 		#print tp, tn, fp, fn
 		prec = float(tp)/(tp+fp)
 		recall = float(tp)/(tp+fn)
+		acc = float (tp+tn)/(tp+tn+fp+fn)
 		#print 'Precision: ', prec
 		#print 'Recall: ', recall
 
-		return (prec, recall)
+		return (prec, recall, acc)
 
 	def classify(self):
 
@@ -79,7 +80,7 @@ class Driver(object):
 
 		predLabels = clf.predict (testtrips)
 
-		print predLabels
+		#print predLabels
 		#print test_target
 
 		return self.calculateResults(predLabels, test_target)
@@ -97,13 +98,15 @@ class Driver(object):
 			g.write(t.printFeatures())
 		g.close()
 
-	def getRandomDriverTrips(self, numtrips = num_NOTselfTrips):
+	def getRandomDriverTrips(self, numtrips):
 		notDrivers = os.listdir("../drivers/")
+		random.shuffle(notDrivers[1:])
+		numNotDrivers = len(notDrivers) #change this parameter to consider a different number
 		tripList = []
 		for i in range(numtrips):
 			dnum = notDrivers[random.randint(1, len(notDrivers) - 1)] #sample a random driver
 			while dnum == self.name: #don't sample from self
-				dnum = notDrivers[random.randint(1, len(notDrivers) - 1)]
+				dnum = notDrivers[random.randint(1, numNotDrivers - 1)]
 			tnum = random.randint(1,200)#sample a random trip
 			t = Trip("../drivers/"+str(dnum)+"/"+str(tnum)+".csv")
 			tripList.append(t.printFeatures())
@@ -114,7 +117,7 @@ class Driver(object):
 		notDrivers = os.listdir("../drivers/")
 
 		g = open ("driver_stats/"+str(self.name)+"_NOTtrips.csv", "w")
-		tripList = self.getRandomDriverTrips()
+		tripList = self.getRandomDriverTrips(num_NOTselfTrips)
 		for other in tripList:
 			g.write(other)
 		g.close()
@@ -128,7 +131,7 @@ class Driver(object):
 			t = Trip("../drivers/"+str(self.name)+"/"+str(order[i])+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
-		tripList = self.getRandomDriverTrips()
+		tripList = self.getRandomDriverTrips(num_NOTselfTrips)
 		for other in tripList:
 			g.write(other)
 		g.close()
@@ -148,18 +151,18 @@ class Driver(object):
 		h = open ("driver_stats/"+"testLabels.csv", "w")
 		for i in range(num_testTrips):
 			h.write(str(1)+"\n")
-		for i in range(num_NOTselfTrips):
+		for i in range(num_testTrips):
 			h.write(str(0)+"\n")
 		h.close()
 
 	def writeCSV_test(self, order):
 		g = open ("driver_stats/"+str(self.name)+"_test.csv", "w")
 		#first trips from this driver
-		for i in range (num_selfTrips+1, num_selfTrips+num_testTrips+1):
+		for i in range (num_selfTrips, num_selfTrips+num_testTrips):
 			t = Trip("../drivers/"+str(self.name)+"/"+str(order[i])+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
-		tripList = self.getRandomDriverTrips()
+		tripList = self.getRandomDriverTrips(num_testTrips)
 		for other in tripList:
 			g.write(other)
 		g.close()
@@ -175,8 +178,8 @@ class Driver(object):
 
 
 d1 = Driver(sys.argv[1])
-#d1.createDataSets()
-print d1.classify()
+d1.createDataSets()
+d1.classify()
 
 
 """d2 = Driver(sys.argv[2])

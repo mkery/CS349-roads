@@ -7,6 +7,9 @@ import math
 import Pmf
 
 
+def computeNorm(x, y):
+	return distance(x, y, 0, 0)
+
 def distance(x0, y0, x1, y1):
 	return math.sqrt((x1-x0)**2 + (y1-y0)**2)
 
@@ -20,6 +23,20 @@ def findSpeed_Dist(trip):
 		v.append(d)
 
 	return v,dist
+
+def computeAngle (p1, p2):
+	dot = 0
+	if computeNorm(p2[0], p2[1]) == 0 or computeNorm(p1[0], p1[1])==0: #may be incorrect
+		dot = 0
+	else:
+		dot = (p2[0]*p1[0]+p2[1]*p1[1])/float(computeNorm(p1[0], p1[1])*computeNorm(p2[0], p2[1])) 
+
+	if dot > 1:
+		dot = 1
+	elif dot < -1:
+		dot = -1
+
+	return math.acos(dot)*180/math.pi
 
 
 
@@ -59,9 +76,29 @@ class Trip(object):
 	 	#self.tripPath = np.append(tripPath, np.arange(tripPath.shape[0]).reshape(tripPath.shape[0],1),1)
 	 	
 	 	#self.v, self.tripDist = findSpeed_Dist(self.tripPath)
-	 	self.findSpeed_Hist(self.tripPath)
 
-		self.tripTime = self.tripPath.shape[0] #length of trip in seconds
+	 	#features computed so far
+	 	self.v = [] #speed at each second
+		self.acc = [] #acceleration at each second
+		self.v_a = [] #velocity*acceleration = horsepower/mass
+		self.jerk = [] #change of acceleration over a second
+		self.ang = [] #change of angle over 3 seconds
+		self.ang_sp = [] #turning agression = speed*angle
+		self.ang_or = [] #angle from the initial vector
+		self.low_sp_count = [] #time at low speed (below 0.25)
+		self.dist = [] #distance driven up to a particular point
+		self.bee_dist = [] #bee flight distance
+
+
+	 	self.computeSpeedAcc()
+	 	self.computeTurningAngles()
+	 	self.computeTimeLowSpeeds()
+
+
+	 	self.findSpeed_Hist()
+	 	self.findAngle_Hist()
+
+		self.tripTime = self.tripPath.shape[0]/float(3660) #length of trip in hours
 	 	self.advSpeed = self.tripDist/self.tripTime #meters per second
 	 	self.maxSpeed = max(self.v)
 
@@ -69,72 +106,99 @@ class Trip(object):
 
 	 	#self.speed_hist, self.acc = findSpeed_Hist(self.tripPath)
 
+	def computeTurningAngles (self):
+		dV = []
+		for ind in range (1, len(self.tripPath)):
+			dV.append(((self.tripPath[ind][0]-self.tripPath[ind-1][0]),(self.tripPath[ind][1]-self.tripPath[ind-1][1])))
+			
+			#not the implementation, subject to change
+			try:
+				self.ang_or.append(computeAngle((1,0), dV[ind-1]))
+			except ZeroDivisionError:
+				self.ang_or.append(0)
+			#print ind
+		#t.append([])
+		#t.append([])
+		#t.append([])
+
+		for ind in range (2, len(dV)):
+			angle = computeAngle(dV[ind-2], dV[ind])
+			self.ang.append(angle)
+			self.ang_sp.append(angle*((self.v[ind-2]+self.v[ind-1]+self.v[ind]))/3)
+			#t[0].append(ind)
+			#t[1].append(angle)
+			#t[2].append((v[ind-2]+v[ind-1]+v[ind])/3)
 
 
-	#changed the implementation of this method, which brought the metrics up a bit
-	#I used km/h, but we can easily change that
-	def findSpeed_Hist(self, trip):
+	def computeSpeedAcc(self):
 		
-		speedList = []
-		speedList.append(0)
-		accList = []
-		accList.append(0)
+		self.tripDist = 0
+		self.v.append(0)
+		self.acc.append(0)
+		self.v_a.append(0)
+		self.jerk.append(0)
+		self.dist.append(0)
+		self.bee_dist.append(0)
 
 		for i in range (1,len(self.tripPath)):
+			curr = 3.6*distance(self.tripPath[i-1][0], self.tripPath[i-1][1], self.tripPath[i][0], self.tripPath[i][1])
+			self.tripDist += curr
+			self.v.append(curr)
+			self.acc.append(self.v[i]-self.v[i-1])
+			self.v_a.append(self.v[i]*self.acc[i])
+			self.jerk.append(self.acc[i]-self.acc[i-1])
+			self.dist.append(self.tripDist)
+			self.bee_dist.append(distance(self.tripPath[i][0], self.tripPath[i][1], 0, 0))
 
-			speedList.append (round(3.6*distance(self.tripPath[i-1][0], self.tripPath[i-1][1], self.tripPath[i][0], self.tripPath[i][1])))
-			accList.append(speedList[i]-speedList[i-1])
 
-		mypmf = Pmf.MakePmfFromList(speedList)
-		self.speed_hist = []
-		MAX = 220
-		vals, freqs = mypmf.Render()
-		val = 0
-		for i in range(MAX):
+	def computeTimeLowSpeeds (self):
+		#0.05, 0.1, 0.15, 0.2, 0.25
+		self.low_sp_count = [0 for i in range(6)]
+		perc = [np.percentile (self.v, j*0.05) for j in range (6)]
+		for i in range(len(self.v)):
+			for j in range (6):
+				if (self.v[i]<perc[j]):
+					self.low_sp_count[j]+=1
+					break
 
-			try:
-				val = freqs[vals.index(i)]
-			except ValueError:
-				val = 0
 
-			self.speed_hist.append (val)
+	def findAngle_Hist(self):
+		ba = 5
+		bas = 5
+		bao = 5
+		self.ang_hist = [np.percentile(self.ang, i*ba) for i in range(1,100/ba)]
+		self.ang_sp_hist = [np.percentile(self.ang_sp, i*bas) for i in range(1,100/bas)]
+		self.ang_or_hist = [np.percentile(self.ang_or, i*bao) for i in range(1,100/bao)]
 
-		mypmf = Pmf.MakePmfFromList(accList)
-		self.acc_hist = []
-		MAX = 50
-		vals, freqs = mypmf.Render()
-		val = 0
-		for i in range(MAX):
-
-			try:
-				val = freqs[vals.index(i)]
-			except ValueError:
-				val = 0
-
-			self.acc_hist.append (val)
-		#print self.speed_hist
-
-		#mypmf.Items()
-		#sys.exit()
-		
-		
-		vel =  np.diff(trip, axis = 0) #x1-x0 and y1-y0
-		self.v = (vel[:,0]**2 + vel[:,1]**2)**0.5 #take distance
-		self.tripDist = np.sum(self.v)
-		"""
-		self.acc = np.diff(self.v, axis = 0)
-		self.speed_hist = [np.percentile(self.v, i*5) for i in range(1,20)]
-		self.acc_hist = [np.percentile(self.acc, i*10) for i in range(1,10)]
-		"""
-		
+	def findSpeed_Hist(self):
+		bv = 5
+		ba = 5
+		bva = 5
+		bj = 5
+		bd = 5
+		bdb = 5 
+		self.speed_hist = [np.percentile(self.v, i*bv) for i in range(1,100/bv)]
+		self.acc_hist = [np.percentile(self.acc, i*ba) for i in range(1,100/ba)]
+		self.v_a_hist = [np.percentile(self.v_a, i*bva) for i in range(1,100/bva)]
+		self.jerk_hist = [np.percentile(self.jerk, i*bj) for i in range(1,100/bj)]
+		self.dist_hist = [np.percentile(self.dist, i*bd) for i in range(1,100/bd)]
+		self.bee_dist_hist = [np.percentile(self.bee_dist, i*bd) for i in range(1,100/bd)]
 
 	def printFeatures(self):
 		features = ""
 		features += str(self.tripDist)+","
 		features += str (self.advSpeed) + ","
-		#features += str(self.maxSpeed) + ","
+		features += str(self.maxSpeed) + ","
 		features += printHist_Feature(self.speed_hist)+","
-		features += printHist_Feature(self.acc_hist)
+		features += printHist_Feature(self.acc_hist) + ","
+		features += printHist_Feature(self.ang_hist) + ","
+		features += printHist_Feature(self.ang_sp_hist) + ","
+		features += printHist_Feature(self.v_a_hist) + ","
+		features += printHist_Feature(self.ang_or_hist) +","
+		features += printHist_Feature(self.low_sp_count) + ","
+		features += printHist_Feature(self.jerk_hist) + ","
+		features += printHist_Feature(self.dist_hist) + ","
+		features += printHist_Feature(self.bee_dist_hist) 
 
 		return features + "\n"
 
