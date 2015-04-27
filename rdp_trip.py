@@ -1,4 +1,7 @@
 import numpy as np
+import sys
+import matplotlib.pyplot as pyplot
+
 """
 edited 4/25 to fit trip default numpy format
 If you import a trip and then add a 3rd column to the trip that is time,
@@ -36,3 +39,32 @@ def rdp_simplify(trip, epsilon):
         return np.vstack((res1[:-1], res2)) #not sure why [:-1] works, but it keeps duplicates from happening
     else:
         return np.vstack((trip[0],trip[-1]))
+
+def rdp_expand(trip, triplen):
+    xs = trip[:,0]
+    ys = trip[:,1]
+    times = trip[:,2]
+
+    xs_interp = np.interp(range(0,triplen), times, xs)
+    ys_interp = np.interp(range(0,triplen), times, ys)
+    return np.append(xs_interp.reshape(xs_interp.shape[0],1), ys_interp.reshape(ys_interp.shape[0],1), 1)
+
+
+"""filename = sys.argv[1]
+tripPath = np.genfromtxt(filename, delimiter=',', skip_header=1)
+#add a column for time in seconds (so if we chop data, still have timepoints)
+tripPath = np.append(tripPath, np.arange(tripPath.shape[0]).reshape(tripPath.shape[0],1),1)
+rdp = rdp_simplify(tripPath, epsilon = 0.75)
+rdp_ex = rdp_expand(rdp, tripPath.shape[0])
+print "original: " + str(tripPath.shape) + " rdp expanded: " + str(rdp_ex.shape)
+
+
+pyplot.figure(1)
+pyplot.plot(tripPath[:,0], tripPath[:,1], 'rx')
+pyplot.plot(rdp[:,0], rdp[:,1], 'bo')
+pyplot.plot(rdp_ex[:,0], rdp_ex[:,1], 'g-')
+pyplot.plot(rdp_ex[:,0], rdp_ex[:,1], 'go')
+
+np.savetxt("rdp_test.csv", rdp_ex, delimiter=",")
+
+#pyplot.show()"""
