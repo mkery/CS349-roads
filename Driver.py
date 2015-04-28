@@ -5,6 +5,7 @@ import math
 from Trip import Trip
 import os
 import random
+from sklearn.metrics import roc_auc_score
 #from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import RandomForestClassifier
@@ -14,8 +15,8 @@ from sklearn.svm import SVC
 import random
 
 num_selfTrips = 120
-num_testTrips = 80
-num_NOTselfTrips = 200
+num_testTrips = 40
+num_NOTselfTrips = 120
 
 
 class Driver(object):
@@ -47,8 +48,8 @@ class Driver(object):
 		acc = float (tp+tn)/(tp+tn+fp+fn)
 		#print 'Precision: ', prec
 		#print 'Recall: ', recall
-
-		return (prec, recall, acc)
+		auc = roc_auc_score(true, predicted)
+		return (prec, recall, auc, acc)
 
 	def classify(self):
 
@@ -100,7 +101,9 @@ class Driver(object):
 
 	def getRandomDriverTrips(self, numtrips):
 		notDrivers = os.listdir("../drivers/")
-		random.shuffle(notDrivers[1:])
+		copy = notDrivers[1:]
+		random.shuffle(copy)
+		notDrivers[1:] = copy
 		numNotDrivers = len(notDrivers) #change this parameter to consider a different number
 		tripList = []
 		for i in range(numtrips):
@@ -179,7 +182,7 @@ class Driver(object):
 
 d1 = Driver(sys.argv[1])
 d1.createDataSets()
-d1.classify()
+print d1.classify()
 
 
 """d2 = Driver(sys.argv[2])

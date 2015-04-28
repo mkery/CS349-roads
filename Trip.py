@@ -98,7 +98,7 @@ class Trip(object):
 	 	self.findSpeed_Hist()
 	 	self.findAngle_Hist()
 
-		self.tripTime = self.tripPath.shape[0]/float(3660) #length of trip in hours
+		self.tripTime = self.tripPath.shape[0] #length of trip in hours
 	 	self.advSpeed = self.tripDist/self.tripTime #meters per second
 	 	self.maxSpeed = max(self.v)
 
@@ -141,7 +141,7 @@ class Trip(object):
 		self.bee_dist.append(0)
 
 		for i in range (1,len(self.tripPath)):
-			curr = 3.6*distance(self.tripPath[i-1][0], self.tripPath[i-1][1], self.tripPath[i][0], self.tripPath[i][1])
+			curr = distance(self.tripPath[i-1][0], self.tripPath[i-1][1], self.tripPath[i][0], self.tripPath[i][1])
 			self.tripDist += curr
 			self.v.append(curr)
 			self.acc.append(self.v[i]-self.v[i-1])
@@ -186,21 +186,21 @@ class Trip(object):
 
 	def printFeatures(self):
 		features = ""
-		features += str(self.tripDist)+","
-		features += str (self.advSpeed) + ","
-		features += str(self.maxSpeed) + ","
+		#features += str(self.tripDist)+","
+		#features += str (self.advSpeed) + ","
+		#features += str(self.maxSpeed) + ","
 		features += printHist_Feature(self.speed_hist)+","
 		features += printHist_Feature(self.acc_hist) + ","
-		features += printHist_Feature(self.ang_hist) + ","
+		#features += printHist_Feature(self.ang_hist) + ","
 		features += printHist_Feature(self.ang_sp_hist) + ","
 		features += printHist_Feature(self.v_a_hist) + ","
-		features += printHist_Feature(self.ang_or_hist) +","
+		#features += printHist_Feature(self.ang_or_hist) +","
 		features += printHist_Feature(self.low_sp_count) + ","
 		features += printHist_Feature(self.jerk_hist) + ","
-		features += printHist_Feature(self.dist_hist) + ","
-		features += printHist_Feature(self.bee_dist_hist) 
+		#features += printHist_Feature(self.dist_hist) + ","
+		#features += printHist_Feature(self.bee_dist_hist) + "," 
 
-		return features + "\n"
+		return features[:-1] + "\n"
 
 	def plotTrip(self):
 		#first figure is the xy path

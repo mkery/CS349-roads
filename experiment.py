@@ -1,22 +1,29 @@
 import os
 import sys
 from Driver import Driver
+import random
 
 drivers = os.listdir("../drivers/")
+copy = drivers[1:]
+random.shuffle(copy)
+drivers[1:]=copy
+#print drivers[1:20]
 #print drivers
-n = int(sys.argv[1])
-g = open (sys.argv[2], "w")
+m = int(sys.argv[1])
+n = int(sys.argv[2])
+g = open (sys.argv[3], "w")
 g.close()
 
-for i in range(1, len(drivers)):
-	g = open (sys.argv[2], "a")
+for i in range(1, m+1):
+	g = open (sys.argv[3], "a")
 	#print drivers[i]
 	d = Driver(drivers[i])
 	g.write(drivers[i] + ",")
 	for j in range(n):
 		d.createDataSets()
 		res = d.classify()
-		g.write (str(res[0]) + "," + str(res[1]))
+		f1 = 2*(res[0]*res[1])/(res[0]+res[1])
+		g.write (str(res[0]) + "," + str(res[1]) + "," +str(f1) +"," + str(res[2]))
 		if j < (n-1):
 			g.write(",")
 
