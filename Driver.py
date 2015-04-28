@@ -73,11 +73,21 @@ class Driver(object):
 		k.close() 
 
 
+
+		print "driver ", self.name
+		clf = RandomForestClassifier(n_estimators=30, criterion='entropy', max_depth=15,  n_jobs=1, min_samples_leaf=5,verbose=1)
+		print clf.fit(traintrips, target)
+		print clf.score(traintrips, target), "train"
+		print clf.score(testtrips, test_target), "test"
+
 		#print traintrips.shape, target.shape
 		#print traintrips[1]
+		#clf = RandomForestRegressor() #LogisticRegression()
+		#clf.fit(traintrips, target)
 		clf = RandomForestClassifier() #LogisticRegression()
 		clf.fit(traintrips, target)
 		#print clf.score(traintrips, target)
+
 
 		predLabels = clf.predict (testtrips)
 
