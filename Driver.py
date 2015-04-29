@@ -17,6 +17,7 @@ import random
 num_selfTrips = 120
 num_testTrips = 40
 num_NOTselfTrips = 120
+size = num_testTrips+num_selfTrips
 
 
 class Driver(object):
@@ -48,22 +49,49 @@ class Driver(object):
 		acc = float (tp+tn)/(tp+tn+fp+fn)
 		#print 'Precision: ', prec
 		#print 'Recall: ', recall
-		auc = roc_auc_score(true, predicted)
+		#auc = roc_auc_score(true, predicted)
+		auc = 0
 		return (prec, recall, auc, acc)
+
+	def splitData(self, data, labels, k):
+
+		traintrips = []
+		target = []
+		testtrips = []
+		testtarget =[]
+		inc = size/5
+		#print len (data)
+		#print size*2
+		for i in range (size*2):
+
+			if (i>=(k*inc) and i<(k+1)*inc) or (i>=((k+5)*inc) and i<((k+6)*inc)):
+				testtrips.append(data[i])
+				testtarget.append(labels[i])
+			else:
+				traintrips.append(data[i])
+				target.append(labels[i])
+
+
+		return traintrips, target, testtrips, testtarget
+
 
 	def classify(self):
 
 		#get training trips for this driver
 		f = open("driver_stats/"+str(self.name)+"_training.csv")
 		#f.readline() #skip header labels
-		traintrips = np.genfromtxt(f, delimiter=',')
+		#traintrips 
+		dataset = np.genfromtxt(f, delimiter=',')
 		f.close()
 
 		#get list of labels for the trips in traintrips
 		g = open("driver_stats/trainingLabels.csv")
-		target = np.genfromtxt(g, delimiter=',')
+		#target
+		labels = np.genfromtxt(g, delimiter=',')
 		g.close()
 
+		
+		"""
 		#get test trips for this driver
 		h = open("driver_stats/"+str(self.name)+"_test.csv")
 		testtrips = np.genfromtxt(h, delimiter=',')
@@ -71,35 +99,30 @@ class Driver(object):
 		k = open("driver_stats/testLabels.csv")
 		test_target = np.genfromtxt(k, delimiter=',')
 		k.close() 
+		"""
+		inc = size/5
+		res = []
+		for k in range(0,5):
+			
+			traintrips, target, testtrips, testtarget = self.splitData(dataset, labels, k)
+			
+			clf = RandomForestClassifier() 
+			
+			#print target
+			clf.fit(traintrips, target)
+			predLabels = clf.predict (testtrips)
+			#print predLabels
+			#print testtarget
+			res.append(self.calculateResults(predLabels, testtarget))
+			#print self.calculateResults(predLabels, testtarget)
+		
 
-
-
-		print "driver ", self.name
-		clf = RandomForestClassifier(n_estimators=30, criterion='entropy', max_depth=15,  n_jobs=1, min_samples_leaf=5,verbose=1)
-		print clf.fit(traintrips, target)
-		print clf.score(traintrips, target), "train"
-		print clf.score(testtrips, test_target), "test"
-
-		#print traintrips.shape, target.shape
-		#print traintrips[1]
-		#clf = RandomForestRegressor() #LogisticRegression()
-		#clf.fit(traintrips, target)
-		clf = RandomForestClassifier() #LogisticRegression()
-		clf.fit(traintrips, target)
-		#print clf.score(traintrips, target)
-
-
-		predLabels = clf.predict (testtrips)
-
-		#print predLabels
-		#print test_target
-
-		return self.calculateResults(predLabels, test_target)
+		return res
 		
 		#print clf.score(testtrips, test_target)
 
 		#joblib.dump(clf, "driver_stats/"+str(self.name)+"_clf.pkl")
-
+	"""
 	def writeCSV(self):
 		g = open ("driver_stats/"+str(self.name)+"_trips.csv", "w")
 		#a header and then the features for each trip
@@ -108,7 +131,7 @@ class Driver(object):
 			t = Trip("../drivers/"+str(self.name)+"/"+str(i)+".csv")
 			g.write(t.printFeatures())
 		g.close()
-
+	"""
 	def getRandomDriverTrips(self, numtrips):
 		notDrivers = os.listdir("../drivers/")
 		copy = notDrivers[1:]
@@ -130,7 +153,7 @@ class Driver(object):
 		notDrivers = os.listdir("../drivers/")
 
 		g = open ("driver_stats/"+str(self.name)+"_NOTtrips.csv", "w")
-		tripList = self.getRandomDriverTrips(num_NOTselfTrips)
+		tripList = self.getRandomDriverTrips(num_NOTselfTrips+num_testTrips)
 		for other in tripList:
 			g.write(other)
 		g.close()
@@ -140,11 +163,11 @@ class Driver(object):
 		#a header and then the features for each trip
 			#g.write("advSpeed,tripDist\n")
 		#first trips from this driver
-		for i in range (1,num_selfTrips+1):
+		for i in range (1,num_selfTrips+num_testTrips+1):
 			t = Trip("../drivers/"+str(self.name)+"/"+str(order[i])+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
-		tripList = self.getRandomDriverTrips(num_NOTselfTrips)
+		tripList = self.getRandomDriverTrips(num_NOTselfTrips+num_testTrips)
 		for other in tripList:
 			g.write(other)
 		g.close()
@@ -153,12 +176,13 @@ class Driver(object):
 	def writeCSV_labels(self):
 		#file containing training labels, same for any driver
 		h = open ("driver_stats/"+"trainingLabels.csv", "w")
-		for i in range(num_selfTrips):
+		for i in range(num_selfTrips+num_testTrips):
 			h.write(str(1)+"\n")
-		for i in range(num_NOTselfTrips):
+		for i in range(num_NOTselfTrips+num_testTrips):
 			h.write(str(0)+"\n")
 		h.close()
 
+	"""
 	def writeCSV_testlabels(self):
 		#file containing test labels, same for any driver
 		h = open ("driver_stats/"+"testLabels.csv", "w")
@@ -179,19 +203,19 @@ class Driver(object):
 		for other in tripList:
 			g.write(other)
 		g.close()
-
+	"""
 	def createDataSets(self):
 		order = [i for i in range(1, 201)]
 		random.shuffle(order)
 		self.writeCSV_training(order)
 		self.writeCSV_labels()
-		self.writeCSV_test(order)
-		self.writeCSV_testlabels()
+		#self.writeCSV_test(order)
+		#self.writeCSV_testlabels()
 
 
 
 d1 = Driver(sys.argv[1])
-d1.createDataSets()
+#d1.createDataSets()
 print d1.classify()
 
 
