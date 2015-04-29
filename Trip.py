@@ -166,9 +166,9 @@ class Trip(object):
 		ba = 5
 		bas = 5
 		bao = 5
-		self.ang_hist = [np.percentile(self.ang, i*ba) for i in range(1,100/ba)]
-		self.ang_sp_hist = [np.percentile(self.ang_sp, i*bas) for i in range(1,100/bas)]
-		self.ang_or_hist = [np.percentile(self.ang_or, i*bao) for i in range(1,100/bao)]
+		self.ang_hist = [np.percentile(self.ang, i*ba) for i in range(1,100/ba+1)]
+		self.ang_sp_hist = [np.percentile(self.ang_sp, i*bas) for i in range(1,100/bas+1)]
+		self.ang_or_hist = [np.percentile(self.ang_or, i*bao) for i in range(1,100/bao+1)]
 
 	def findSpeed_Hist(self):
 		bv = 5
@@ -177,12 +177,12 @@ class Trip(object):
 		bj = 5
 		bd = 5
 		bdb = 5 
-		self.speed_hist = [np.percentile(self.v, i*bv) for i in range(1,100/bv)]
-		self.acc_hist = [np.percentile(self.acc, i*ba) for i in range(1,100/ba)]
-		self.v_a_hist = [np.percentile(self.v_a, i*bva) for i in range(1,100/bva)]
-		self.jerk_hist = [np.percentile(self.jerk, i*bj) for i in range(1,100/bj)]
-		self.dist_hist = [np.percentile(self.dist, i*bd) for i in range(1,100/bd)]
-		self.bee_dist_hist = [np.percentile(self.bee_dist, i*bd) for i in range(1,100/bd)]
+		self.speed_hist = [np.percentile(self.v, i*bv) for i in range(1,100/bv+1)]
+		self.acc_hist = [np.percentile(self.acc, i*ba) for i in range(1,100/ba+1)]
+		self.v_a_hist = [np.percentile(self.v_a, i*bva) for i in range(1,100/bva+1)]
+		self.jerk_hist = [np.percentile(self.jerk, i*bj) for i in range(1,100/bj+1)]
+		self.dist_hist = [np.percentile(self.dist, i*bd) for i in range(1,100/bd+1)]
+		self.bee_dist_hist = [np.percentile(self.bee_dist, i*bd) for i in range(1,100/bd+1)]
 
 	def printFeatures(self):
 		features = ""
