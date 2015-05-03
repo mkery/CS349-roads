@@ -16,7 +16,7 @@ import random
 
 num_selfTrips = 120
 num_testTrips = 40
-num_NOTselfTrips = 120
+num_NOTselfTrips = 200
 size = num_testTrips+num_selfTrips
 
 
@@ -80,41 +80,38 @@ class Driver(object):
 		#get training trips for this driver
 		f = open("driver_stats/"+str(self.name)+"_training.csv")
 		#f.readline() #skip header labels
-		#traintrips 
-		dataset = np.genfromtxt(f, delimiter=',')
+		traintrips = np.genfromtxt(f, delimiter=',')
 		f.close()
 
 		#get list of labels for the trips in traintrips
 		g = open("driver_stats/trainingLabels.csv")
-		#target
-		labels = np.genfromtxt(g, delimiter=',')
+		target_labels = np.genfromtxt(g, delimiter=',')
 		g.close()
 
 		
-		"""
 		#get test trips for this driver
 		h = open("driver_stats/"+str(self.name)+"_test.csv")
 		testtrips = np.genfromtxt(h, delimiter=',')
 		h.close()
 		k = open("driver_stats/testLabels.csv")
-		test_target = np.genfromtxt(k, delimiter=',')
+		test_labels = np.genfromtxt(k, delimiter=',')
 		k.close() 
-		"""
-		inc = size/5
+		
+		#inc = size/5
 		res = []
-		for k in range(0,5):
+		#for k in range(0,5):
 			
-			traintrips, target, testtrips, testtarget = self.splitData(dataset, labels, k)
+		#traintrips, target, testtrips, testtarget = self.splitData(dataset, labels, k)
 			
-			clf = RandomForestClassifier() 
-			
-			#print target
-			clf.fit(traintrips, target)
-			predLabels = clf.predict (testtrips)
-			#print predLabels
-			#print testtarget
-			res.append(self.calculateResults(predLabels, testtarget))
-			#print self.calculateResults(predLabels, testtarget)
+		clf = RandomForestClassifier() 
+		
+		#print target
+		clf.fit(traintrips, target_labels)
+		predLabels = clf.predict (testtrips)
+		print predLabels
+		#print testtarget
+		res.append(self.calculateResults(predLabels, test_labels))
+		#print self.calculateResults(predLabels, testtarget)
 		
 
 		return res
@@ -158,59 +155,67 @@ class Driver(object):
 			g.write(other)
 		g.close()
 
-	def writeCSV_training(self, order):
+	def writeCSV_training(self):
 		g = open ("driver_stats/"+str(self.name)+"_training.csv", "w")
 		#a header and then the features for each trip
 			#g.write("advSpeed,tripDist\n")
 		#first trips from this driver
-		for i in range (1,num_selfTrips+num_testTrips+1):
-			t = Trip("../drivers/"+str(self.name)+"/"+str(order[i])+".csv")
+		for i in range (1,num_selfTrips+1):
+			t = Trip("../drivers/"+str(self.name)+"/"+str(i)+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
-		tripList = self.getRandomDriverTrips(num_NOTselfTrips+num_testTrips)
+		tripList = self.getRandomDriverTrips(num_NOTselfTrips)
 		for other in tripList:
 			g.write(other)
 		g.close()
 
-	#TODO: extend to both training and testing labels 
-	def writeCSV_labels(self):
+	def writeCSV_test_labels(self):
+		g = open ("answerkey/ans_d"+str(self.name)+".csv")
+		ans = [line.strip() for line in g]
+
 		#file containing training labels, same for any driver
-		h = open ("driver_stats/"+"trainingLabels.csv", "w")
-		for i in range(num_selfTrips+num_testTrips):
-			h.write(str(1)+"\n")
-		for i in range(num_NOTselfTrips+num_testTrips):
-			h.write(str(0)+"\n")
-		h.close()
-
-	"""
-	def writeCSV_testlabels(self):
-		#file containing test labels, same for any driver
 		h = open ("driver_stats/"+"testLabels.csv", "w")
-		for i in range(num_testTrips):
+		for i in range (num_selfTrips, num_selfTrips+num_testTrips):
+			h.write(str(ans[i-1])+"\n")
+		"""for i in range(num_testTrips):
+			h.write(str(0)+"\n")"""
+		h.close()
+
+	def writeCSV_train_labels(self):
+		#file containing test labels, same for any driver
+		h = open ("driver_stats/"+"trainingLabels.csv", "w")
+		for i in range(num_selfTrips):
 			h.write(str(1)+"\n")
-		for i in range(num_testTrips):
+		for i in range(num_NOTselfTrips):
 			h.write(str(0)+"\n")
 		h.close()
 
-	def writeCSV_test(self, order):
+	def writeCSV_test(self):
 		g = open ("driver_stats/"+str(self.name)+"_test.csv", "w")
 		#first trips from this driver
 		for i in range (num_selfTrips, num_selfTrips+num_testTrips):
-			t = Trip("../drivers/"+str(self.name)+"/"+str(order[i])+".csv")
+			t = Trip("../drivers/"+str(self.name)+"/"+str(i)+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
-		tripList = self.getRandomDriverTrips(num_testTrips)
+		"""tripList = self.getRandomDriverTrips(num_testTrips)
 		for other in tripList:
-			g.write(other)
+			g.write(other)"""
 		g.close()
-	"""
+	
 	def createDataSets(self):
-		order = [i for i in range(1, 201)]
-		random.shuffle(order)
-		self.writeCSV_training(order)
-		self.writeCSV_labels()
-		#self.writeCSV_test(order)
-		#self.writeCSV_testlabels()
+		#order = [i for i in range(1, 201)]
+		#random.shuffle(order)
+		#self.writeCSV_training()
+		print "wrote training trips"
+
+		#self.writeCSV_train_labels()
+		print "wrote training labels"
+
+		self.writeCSV_test()
+		print "wrote test trips"
+
+		self.writeCSV_test_labels()
+		print "wrote test labels"
 
 
 
