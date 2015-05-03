@@ -2,7 +2,6 @@ import matplotlib.pyplot as pyplot
 import numpy as np
 import os
 import sys
-import rdp_trip
 import math
 import Pmf
 from scipy.ndimage import gaussian_filter1d
@@ -276,9 +275,9 @@ class Trip(object):
 		features += printHist_Feature(self.ang_sp_hist) + "," #4
 		features += printHist_Feature(self.v_a_hist) + "," #5
 		features += printHist_Feature(self.ang_or_hist) +"," #6
-		#features += printHist_Feature(self.low_sp_count) + "," #7
+		features += printHist_Feature(self.low_sp_count) + "," #7
 		features += printHist_Feature(self.jerk_hist) + "," #8
-		features += printHist_Feature(self.dist_hist) + "," #9
+		#features += printHist_Feature(self.dist_hist) + "," #9
 		features += printHist_Feature(self.bee_dist_hist) + "," #10 
 		features += printHist_Feature(self.turn_ang_hist) + "," #11
 		features += printHist_Feature(self.turn_dist_hist) +"," #12
