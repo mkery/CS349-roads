@@ -12,6 +12,7 @@ drivers[1:]=copy
 m = int(sys.argv[1])
 n = int(sys.argv[2])
 g = open (sys.argv[3], "w")
+g.write("driver,precision,recall,f1,auc\n")
 g.close()
 
 for i in range(1, m+1):

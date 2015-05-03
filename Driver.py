@@ -9,14 +9,17 @@ from sklearn.metrics import roc_auc_score
 #from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.svm import SVC
 from sklearn.externals import joblib
 from sklearn.svm import SVC
 import random
+#from sklearn.feature_selection import SelectKBest 
+#from sklearn.feature_selection import chi2
 
-num_selfTrips = 120
-num_testTrips = 40
-num_NOTselfTrips = 120
+num_selfTrips = 140
+num_testTrips = 60
+num_NOTselfTrips = 140
 size = num_testTrips+num_selfTrips
 
 
@@ -49,8 +52,8 @@ class Driver(object):
 		acc = float (tp+tn)/(tp+tn+fp+fn)
 		#print 'Precision: ', prec
 		#print 'Recall: ', recall
-		#auc = roc_auc_score(true, predicted)
-		auc = 0
+		auc = roc_auc_score(true, predicted)
+		#auc = 0
 		return (prec, recall, auc, acc)
 
 	def splitData(self, data, labels, k):
@@ -100,6 +103,7 @@ class Driver(object):
 		test_target = np.genfromtxt(k, delimiter=',')
 		k.close() 
 		"""
+
 		inc = size/5
 		res = []
 		for k in range(0,5):
@@ -108,7 +112,7 @@ class Driver(object):
 			
 			clf = RandomForestClassifier() 
 			
-			#print target
+			#print traintrips[0]
 			clf.fit(traintrips, target)
 			predLabels = clf.predict (testtrips)
 			#print predLabels
@@ -137,12 +141,12 @@ class Driver(object):
 		copy = notDrivers[1:]
 		random.shuffle(copy)
 		notDrivers[1:] = copy
-		numNotDrivers = len(notDrivers) #change this parameter to consider a different number
+		numNotDrivers = len(notDrivers)-1 #change this parameter to consider a different number
 		tripList = []
 		for i in range(numtrips):
-			dnum = notDrivers[random.randint(1, len(notDrivers) - 1)] #sample a random driver
+			dnum = notDrivers[random.randint(1, numNotDrivers)] #sample a random driver
 			while dnum == self.name: #don't sample from self
-				dnum = notDrivers[random.randint(1, numNotDrivers - 1)]
+				dnum = notDrivers[random.randint(1, numNotDrivers)]
 			tnum = random.randint(1,200)#sample a random trip
 			t = Trip("../drivers/"+str(dnum)+"/"+str(tnum)+".csv")
 			tripList.append(t.printFeatures())
@@ -163,7 +167,8 @@ class Driver(object):
 		#a header and then the features for each trip
 			#g.write("advSpeed,tripDist\n")
 		#first trips from this driver
-		for i in range (1,num_selfTrips+num_testTrips+1):
+		for i in range (0,num_selfTrips+num_testTrips):
+			#print i
 			t = Trip("../drivers/"+str(self.name)+"/"+str(order[i])+".csv")
 			g.write(t.printFeatures())
 		#trips from other drivers
@@ -214,9 +219,9 @@ class Driver(object):
 
 
 
-d1 = Driver(sys.argv[1])
+#d1 = Driver(sys.argv[1])
 #d1.createDataSets()
-print d1.classify()
+#print d1.classify()
 
 
 """d2 = Driver(sys.argv[2])
