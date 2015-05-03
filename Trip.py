@@ -2,7 +2,6 @@ import matplotlib.pyplot as pyplot
 import numpy as np
 import os
 import sys
-import rdp_trip
 import math
 import Pmf
 
