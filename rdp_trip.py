@@ -6,8 +6,28 @@ import matplotlib.pyplot as pyplot
 edited 4/25 to fit trip default numpy format
 If you import a trip and then add a 3rd column to the trip that is time,
 when this runs the time field is kept... a bit hacky but works.
-
 """
+
+def distance(x0, y0, x1, y1):
+    return ((x1-x0)**2 + (y1-y0)**2) ** (.5)
+
+def unit_vector(v):
+    v_len = (v[0]**2 + v[1]**2)**0.5
+    return [v[0]/v_len, v[1]/v_len]
+
+# get angle between 3 points in radians
+def angle_3_points(x1, y1, x2, y2, x3, y3):
+    v1 = [x2-x1, y2-x1]
+    v2 = [x2-x3, y2-y3]
+    v1_unit = unit_vector(v1)
+    v2_unit = unit_vector(v2)
+    angle = np.arccos(np.dot(v1_unit, v2_unit))
+    if np.isnan(angle):
+        if(v1_unit == v2_unit).all():
+            return 0.0
+        else:
+            return np.pi
+    return angle
 
 def dist_point_to_line(x0, x1, x2):
     """ Calculates the distance from the point ``x0`` to the line given
@@ -40,7 +60,9 @@ def rdp_simplify(trip, epsilon):
     else:
         return np.vstack((trip[0],trip[-1]))
 
-def rdp_expand(trip, triplen):
+#takes an rdp simplified trip and interpolates to evenly fill out time points
+#so far.... not helpful
+def rdp_format_expand(trip, triplen):
     xs = trip[:,0]
     ys = trip[:,1]
     times = trip[:,2]
@@ -50,21 +72,40 @@ def rdp_expand(trip, triplen):
     return np.append(xs_interp.reshape(xs_interp.shape[0],1), ys_interp.reshape(ys_interp.shape[0],1), 1)
 
 
-"""filename = sys.argv[1]
+def rdp_format_angdist(trip):
+    angdists = []
+    for i in range(1, trip.shape[0]-1):
+        x1 = trip[i-1][0]
+        y1 = trip[i-1][1]
+        x2 = trip[i][0]
+        y2 = trip[i][1]
+        x3 = trip[i+1][0]
+        y3 = trip[i+1][1]
+
+        dist = (distance(x1, y1, x3, y3))
+        ang = (angle_3_points(x1, y1, x2, y2, x3, y3))*180/np.pi #to degrees
+        angdists.append((ang, dist))
+    return np.array(angdists)
+
+
+
+filename = sys.argv[1]
 tripPath = np.genfromtxt(filename, delimiter=',', skip_header=1)
 #add a column for time in seconds (so if we chop data, still have timepoints)
-tripPath = np.append(tripPath, np.arange(tripPath.shape[0]).reshape(tripPath.shape[0],1),1)
-rdp = rdp_simplify(tripPath, epsilon = 0.75)
-rdp_ex = rdp_expand(rdp, tripPath.shape[0])
-print "original: " + str(tripPath.shape) + " rdp expanded: " + str(rdp_ex.shape)
-
+#tripPath = np.append(tripPath, np.arange(tripPath.shape[0]).reshape(tripPath.shape[0],1),1)
+#rdp = rdp_simplify(tripPath, epsilon = 0.75)
+rdp = tripPath
+angdists = rdp_format_angdist(rdp)
 
 pyplot.figure(1)
+pyplot.subplot(211)
+pyplot.scatter(angdists[:,0], angdists[:,1])
+
+pyplot.subplot(212)
 pyplot.plot(tripPath[:,0], tripPath[:,1], 'rx')
 pyplot.plot(rdp[:,0], rdp[:,1], 'bo')
-pyplot.plot(rdp_ex[:,0], rdp_ex[:,1], 'g-')
-pyplot.plot(rdp_ex[:,0], rdp_ex[:,1], 'go')
+pyplot.show()
 
-np.savetxt("rdp_test.csv", rdp_ex, delimiter=",")
+#np.savetxt("rdp_test.csv", rdp, delimiter=",")
 
 #pyplot.show()"""
