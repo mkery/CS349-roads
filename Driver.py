@@ -110,7 +110,7 @@ class Driver(object):
 			
 			traintrips, target, testtrips, testtarget = self.splitData(dataset, labels, k)
 			
-			clf = RandomForestClassifier() 
+			clf = RandomForestClassifier(n_estimators=500)
 			
 			#print traintrips[0]
 			clf.fit(traintrips, target)
