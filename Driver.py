@@ -150,6 +150,7 @@ class Driver(object):
 		tripList = []
 		for i in range(numtrips):
 			dnum = notDrivers[random.randint(1, numNotDrivers)] #sample a random driver
+			print self.name  + " " + dnum
 			while dnum == self.name: #don't sample from self
 				dnum = notDrivers[random.randint(1, numNotDrivers)]
 			tnum = random.randint(1,200)#sample a random trip
