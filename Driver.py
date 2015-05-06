@@ -93,7 +93,7 @@ class Driver(object):
 		labels = np.genfromtxt(g, delimiter=',')
 		g.close()
 
-		
+		print dataset[0]
 		"""
 		#get test trips for this driver
 		h = open("driver_stats/"+str(self.name)+"_test.csv")
