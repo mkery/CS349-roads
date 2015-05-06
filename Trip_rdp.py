@@ -2,7 +2,6 @@ import matplotlib.pyplot as pyplot
 import numpy as np
 import os
 import sys
-import rdp_trip as rdp
 import math
 import Pmf
 
@@ -82,7 +81,7 @@ class Trip(object):
 	 	#add a column for time in seconds (so if we chop data, still have timepoints)
 	 	self.tripPath = np.append(tripPath, np.arange(tripPath.shape[0]).reshape(tripPath.shape[0],1),1)
 	 	
-	 	self.rdp = rdp.rdp_simplify(self.tripPath, epsilon = 0.75)
+	 	#self.rdp = rdp.rdp_simplify(self.tripPath, epsilon = 0.75)
 	 	
 	 	#self.angles = compute_AllAngles(self.rdp)
 	 	#print self.angles
@@ -160,8 +159,7 @@ class Trip(object):
 	def printFeatures(self):
 		features = ""
 		features += printHist_Feature(self.speed_hist)+","
-		features += str(self.tripDist)+","
-		features += printHist_Feature(self.acc_hist)
+		features += str(self.tripDist)
 
 		return features + "\n"
 
@@ -185,9 +183,9 @@ class Trip(object):
 		pyplot.show()
 
 
-trip_test = Trip(sys.argv[1])
+"""trip_test = Trip(sys.argv[1])
 trip_test.plotTrip()
 
-print trip_test.rdp
+print trip_test.rdp"""
 
 

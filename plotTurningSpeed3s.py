@@ -1,9 +1,10 @@
-from mpl_toolkits.mplot3d import axes3d
+#from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 import numpy as np
-from pylab import *
+#from pylab import *
 import sys
 import math
+import rdp_trip as rdp
 
 def computeNorm(x, y):
 	return math.sqrt (x**2 + y**2)
@@ -83,7 +84,7 @@ for ind in range (2, len(dV)):
 
 
 plt.subplot (2, 1, 1)
-plt.plot(t[0], t[1], "b-")#, sharpTurns[0], sharpTurns[2], "r.") #z[1:], angleOrigin, "k-")
+plt.plot(t[0], t[1], "b-", t[0], t[2], "r-")#, sharpTurns[0], sharpTurns[2], "r.") #z[1:], angleOrigin, "k-")
 plt.xlabel("Time")
 plt.ylabel("Turning Angle")
 plt.subplot (2, 1, 2)
