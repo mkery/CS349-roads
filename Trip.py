@@ -13,9 +13,6 @@ def computeNorm(x, y):
 def distance(x0, y0, x1, y1):
 	return math.sqrt((x1-x0)**2 + (y1-y0)**2)
 
-def distance1 (x,y):
-	return distance(x[0],x[1],y[0],y[1])
-
 def findSpeed_Dist(trip):
 	v = []
 	a = []
@@ -71,10 +68,18 @@ def printHist_Feature(hist):
 
 class Trip(object):
 
-	def __init__(self, filename):
+	def __init__(self, filename, feat):
 
 		#read in trip from file
 	 	self.tripPathRaw = np.genfromtxt(filename, delimiter=',', skip_header=1)
+
+	 	self.numFeatures = 16
+
+	 	if len(feat) < self.numFeatures:
+	 		for i in range (len(feat), self.numFeatures):
+	 			feat+="0"
+	 	self.feat = feat
+
 
 		#self.smooth_path()
 		self.tripPath=self.tripPathRaw
@@ -114,14 +119,6 @@ class Trip(object):
 
 	 	#self.speed_hist, self.acc = findSpeed_Hist(self.tripPath)
 
-
-	#inspired by Andrei Olariu
-	def smooth_path(self): 
-
-		for i in range(2, len(self.tripPathRaw)):
-
-			if distance1(self.tripPathRaw[i-2], self.tripPathRaw[i]) < max(distance1(self.tripPathRaw[i-2], self.tripPathRaw[i-1]), distance1(self.tripPathRaw[i-1], self.tripPathRaw[i])):
-				self.tripPathRaw[i-1] = [(self.tripPathRaw[i-2][0] + self.tripPathRaw[i][0]) / 2, (self.tripPathRaw[i-2][1] + self.tripPathRaw[i][1]) / 2]
 
 	#code taken from stackexchage http://stackoverflow.com/questions/15178146/line-smoothing-algorithm-in-python
 	def smooth_data(self, data):
@@ -167,7 +164,7 @@ class Trip(object):
 		
 		ind = 0
 		curr = 1
-		th = 50
+		th = 50 #threshold
 		tol = 5
 		while(ind<len(self.dV) and curr < len(self.dV)):
 			#print ind
@@ -262,9 +259,13 @@ class Trip(object):
 		
 
 	def computeHist(self, b, data):
+
+		#inspired by Philipp Eulenberg from the Kaggle forum
+		bins = [5,10,25,50,75,85,90,95,97,98,99,100]
 		if np.array(data).shape[0] == 0:
-			return [0 for i in range(0,100/b+3)]
-		hist = [np.percentile(data, i*b) for i in range(0,100/b+1)]
+			return [0 for i in range(len(bins)+2)]#range(0,100/b+3)]
+
+		hist = [np.percentile(data, bins[i]) for i in range(len(bins))]#[np.percentile(data, i*b) for i in range(100/b+1)]
 		mean = np.mean(data)
 		stdev = np.std(data)
 		hist.append(mean)
@@ -273,23 +274,34 @@ class Trip(object):
 
 
 	def printFeatures(self):
+		allFeatures = [str(self.tripDist), str (self.advSpeed), str(self.maxSpeed), printHist_Feature(self.speed_hist), printHist_Feature(self.acc_hist), printHist_Feature(self.ang_hist), printHist_Feature(self.ang_sp_hist), printHist_Feature(self.v_a_hist), printHist_Feature(self.ang_or_hist), printHist_Feature(self.low_sp_count), printHist_Feature(self.jerk_hist), printHist_Feature(self.dist_hist), printHist_Feature(self.bee_dist_hist), printHist_Feature(self.turn_ang_hist), printHist_Feature(self.turn_dist_hist), printHist_Feature(self.sharp_turn_sp_hist)]
+
 		features = ""
-		#features += str(self.tripDist)+","
-		#features += str (self.advSpeed) + ","
-		#features += str(self.maxSpeed) + ","
+
+		for i in range(self.numFeatures):
+		
+			if self.feat[i]=='1':
+				features += allFeatures[i] + ","
+
+
+		"""		
+		features += str(self.tripDist)+","
+		features += str (self.advSpeed) + ","
+		features += str(self.maxSpeed) + ","
 		features += printHist_Feature(self.speed_hist)+"," #1
 		features += printHist_Feature(self.acc_hist) + "," #2
 		features += printHist_Feature(self.ang_hist) + "," #3
 		features += printHist_Feature(self.ang_sp_hist) + "," #4
 		features += printHist_Feature(self.v_a_hist) + "," #5
-		#features += printHist_Feature(self.ang_or_hist) +"," #6
+		features += printHist_Feature(self.ang_or_hist) +"," #6
 		features += printHist_Feature(self.low_sp_count) + "," #7
 		features += printHist_Feature(self.jerk_hist) + "," #8
 		features += printHist_Feature(self.dist_hist) + "," #9
-		#features += printHist_Feature(self.bee_dist_hist) + "," #10 
-		#features += printHist_Feature(self.turn_ang_hist) + "," #11
+		features += printHist_Feature(self.bee_dist_hist) + "," #10 
+		features += printHist_Feature(self.turn_ang_hist) + "," #11
 		features += printHist_Feature(self.turn_dist_hist) +"," #12
 		features += printHist_Feature(self.sharp_turn_sp_hist) + "," #13
+		"""
 
 		return features[:-1] + "\n"
 
@@ -329,5 +341,5 @@ trip_test.plotTrip()
 
 print trip_test.advSpeed"""
 
-t = Trip("../drivers/2/100.csv")
+#t = Trip("../drivers/2/100.csv")
 
