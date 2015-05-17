@@ -86,8 +86,12 @@ def chainMatches(tripA, tripB, matches, angle_min = 5, dist_min = 5):
 	return chains
 
 
+def matchTrips(tripA, tripA_rdp, tripB, tripB_rdp):
+	matches = matchAngles(tripA, tripB)
+	chains = chainMatches(tripA, tripB, matches)
+	return (len(matches), len(chains))
 
-
+"""
 #to start, just comparing 2 trips at a time
 a = sys.argv[1]
 tripA = np.genfromtxt(a+"_angle_dist.csv", delimiter=',')
@@ -102,7 +106,6 @@ matches = matchAngles(tripA, tripB)
 print len(matches)
 chains = chainMatches(tripA, tripB, matches)
 print len(chains)
-
 
 pyplot.figure(1)
 pyplot.plot(tripA_rdp[:,0], tripA_rdp[:,1], 'r-')
@@ -123,5 +126,5 @@ for ch in chains:
 		pyplot.plot(tripB_rdp[t2B][0], tripB_rdp[t2B][1], 'bo')
 		pyplot.plot(tripB_rdp[t3B][0], tripB_rdp[t3B][1], 'bo')
 
-pyplot.show()
+pyplot.show()"""
 
