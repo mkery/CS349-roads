@@ -26,6 +26,6 @@ Driver.py - creates a driver object, and contains methods for creating datasets 
 
 experiment.py - carries out an experiment consisting of a given number of trials
 
-
+tripmatching - contains code of trip matching and rdp algorithm
 
 
