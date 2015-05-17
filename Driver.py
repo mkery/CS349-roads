@@ -1,4 +1,4 @@
-#This program creates a driver object, and contains methods for creating datasets to be used as training/testing data.
+#This program creates a driver object, and contains methods for creating datasets to be used as training/testing data and executing a classification task.
 
 import matplotlib.pyplot as pyplot
 import numpy as np
