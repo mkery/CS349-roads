@@ -1,4 +1,4 @@
-#This program carries out an experiment consisting on n trials (each consisting of 5 sample runs) with a specified feature set; 
+#This program carries out an experiment consisting on m trials (each consisting of 5 sample runs) with a specified feature set; 
 #it takes in the following parameters:
 #number m - number of randomly selected drivers on which the model will be tested,
 #number n - number of 'other' drivers for each trial, 0 for all drivers,
