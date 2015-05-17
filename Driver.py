@@ -147,8 +147,9 @@ class Driver(object):
 		if numNotDrivers == 0 or numNotDrivers >= len(notDrivers):
 			numNotDrivers = len(notDrivers)-1
 
+		#if we are comparing to only one driver and that driver is the same as the original driver
 		if numNotDrivers == 1:
-			while notDrivers[1] == self.name: #don't sample from self
+			while notDrivers[1] == self.name:
 				copy = notDrivers[1:]
 				random.shuffle(copy)
 				notDrivers[1:] = copy
