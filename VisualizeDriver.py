@@ -9,6 +9,23 @@ def distance(x0, y0, x1, y1):
     """Computes 2D euclidean distance"""
     return hypot((x1 - x0), (y1 - y0))
 
+def findStops(speeds):
+	stops = [] #stops are a start and end time pair
+	start = -1
+	end = -1
+	for i in range(1, len(speeds)):
+		advS = (speeds[i] + speeds[i-1])/2 #smooth out noise in stop duration
+		if speeds[i] == 0: #start of stop
+			end = i
+			if start == -1:
+				start = i
+		elif start > -1 and advS > 1: 
+			stops.append([start,end])
+			start = -1
+			end = -1
+	if start > -1:
+		stops.append([start, len(speeds)])
+	return stops
 
 def velocities_and_distance_covered(trip):
 	"""
@@ -31,14 +48,18 @@ def plotTrip(filename):
 
 	reducedTrip = rdp_trip.rdp(tripPath, epsilon=0.75)
 	v, distancesum = velocities_and_distance_covered(tripPath)
-
+	stops = findStops(v)
 
 	"""pyplot.figure(1)
 	pyplot.subplot(211)"""
 	startPoint = (tripPath[0][0], tripPath[1][1]) 
 	pyplot.plot(tripPath[:,0], tripPath[:,1], 'bx', startPoint[0], startPoint[1], 'bs')
-	#for (x, y) in reducedTrip:
-   	#	 pyplot.plot(x, y, 'r+')
+	for (x, y) in reducedTrip:
+   		 pyplot.plot(x, y, 'ro')
+   		 print str((x,y))
+   	for (st,en) in stops:
+   		 pyplot.plot(tripPath[st][0], tripPath[st][1], "go")
+
 	pyplot.ylabel('y')
 	pyplot.xlabel('x')
 	pyplot.show()

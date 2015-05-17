@@ -32,7 +32,7 @@ def angle_3_points(x1, y1, x2, y2, x3, y3):
 def dist_point_to_line(x0, x1, x2):
     """ Calculates the distance from the point ``x0`` to the line given
     by the points ``x1`` and ``x2``, all numpy arrays """
-
+    #print str(x0)+", "+ str(x1)+", "+str(x2)
     if x1[0] == x2[0]:
         return np.abs(x0[0] - x1[0])
 
@@ -77,38 +77,50 @@ def rdp_format_angdist(trip):
     for i in range(1, trip.shape[0]-1):
         x1 = trip[i-1][0]
         y1 = trip[i-1][1]
+        ind1 = i-1
+
         x2 = trip[i][0]
         y2 = trip[i][1]
+        ind2 = i
+
         x3 = trip[i+1][0]
         y3 = trip[i+1][1]
+        ind3 = i+1
 
         dist = (distance(x1, y1, x3, y3))
         ang = (angle_3_points(x1, y1, x2, y2, x3, y3))*180/np.pi #to degrees
-        angdists.append((ang, dist))
+        angdists.append((ang, dist, ind1, ind2, ind3))
     return np.array(angdists)
 
 
+def generateRDP(letter, driverN, tripN):
+    """letter = sys.argv[1] #ex, A or B or C, testing
+    driverN = sys.argv[2]
+    tripN = sys.argv[3]"""
 
-print "carrots"
-filename = sys.argv[1]
-tripPath = np.genfromtxt(filename, delimiter=',', skip_header=1)
-#add a column for time in seconds (so if we chop data, still have timepoints)
-tripPath = np.append(tripPath, np.arange(tripPath.shape[0]).reshape(tripPath.shape[0],1),1)
-rdp = rdp_simplify(tripPath, epsilon = 0.75)
-print "rdp simplification complete"
+    tripPath = np.genfromtxt("../../drivers/"+driverN+"/"+tripN+".csv", delimiter=',', skip_header=1)
+    #add a column for time in seconds (so if we chop data, still have timepoints)
+    tripPath = np.append(tripPath, np.arange(tripPath.shape[0]).reshape(tripPath.shape[0],1),1)
+    rdp = rdp_simplify(tripPath, epsilon = 0.75)
+    print "rdp simplification complete"
+    #print str(rdp)
+    #rdp = tripPath
+    angdists = rdp_format_angdist(rdp)
+    #angdists = angdists[angdists[:,1].argsort()] #sort by distance
+    #angdists = angdists[::-1,:] #reverse to put in descending order
 
-#rdp = tripPath
-"""angdists = rdp_format_angdist(rdp)
+    """
+    pyplot.figure(1)
+    pyplot.subplot(211)
+    pyplot.scatter(angdists[:,0], angdists[:,1])
 
-pyplot.figure(1)
-pyplot.subplot(211)
-pyplot.scatter(angdists[:,0], angdists[:,1])"""
+    pyplot.subplot(212)
+    pyplot.plot(tripPath[:,0], tripPath[:,1], 'rx')
+    pyplot.plot(rdp[:,0], rdp[:,1], 'bo')
+    pyplot.show()
+    """
 
-pyplot.subplot(212)
-pyplot.plot(tripPath[:,0], tripPath[:,1], 'rx')
-pyplot.plot(rdp[:,0], rdp[:,1], 'bo')
-pyplot.show()
+    np.savetxt(letter+"_rdp.csv", rdp, delimiter=",")
+    np.savetxt(letter+"_angle_dist.csv", angdists, delimiter=",")
 
-np.savetxt("rdp_test16.csv", rdp, delimiter=",")
-
-#pyplot.show()"""
+        #pyplot.show()"""
